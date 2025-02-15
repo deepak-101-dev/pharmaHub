@@ -75,7 +75,7 @@ const VerificationScreen = () => {
         //     }
         // } 
         try {
-            const response = await fetch(`${BASE_URL}/apiapi/v1/login`, {
+            const response = await fetch(`${BASE_URL}/api/v1/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

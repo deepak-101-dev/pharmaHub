@@ -69,38 +69,41 @@ const TargetProgress = ({ loggedInUser }) => {
     const selectedTarget = targets.find(target => target.targetType === selectedTargetType);
 
     if (!selectedTarget) return null;
+    const getRemainingTime = (targetType, targetEndDate) => {
+        const now = new Date();
+        const endDate = targetEndDate ? new Date(targetEndDate) : new Date();
 
-    // return (
-    //     <View style={{ paddingVertical: 20, backgroundColor: "white", marginTop: 20, paddingBottom: 20 }}>
-    //         <Text style={{ fontSize: 18, fontWeight: "bold", paddingHorizontal: 20, marginBottom: 20 }}>
-    //             Your Targets
-    //         </Text>
-    //         <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 10 }}>
-    //             {targets.map((target, index) => (
-    //                 <TouchableOpacity
-    //                     key={index}
-    //                     style={{
-    //                         backgroundColor: Colors.companyLight,
-    //                         borderRadius: 10,
-    //                         padding: 20,
-    //                         alignItems: "center",
-    //                         borderWidth: 1,
-    //                         borderColor: Colors.companyPrimaryDark,
-    //                         flex: 1,
-    //                         marginHorizontal: 5,
-    //                     }}
-    //                     activeOpacity={0.7}
-    //                 >
-    //                     <HollowPieChart achieved={target.achievedValue || 0} target={target.targetValue} color={targetColors[target.targetType] || "gray"} />
-    //                     <Text style={{ fontSize: 16, fontWeight: "bold", marginTop: 5 }}>{target.targetType}</Text>
-    //                     <Text style={{ fontSize: 14, color: Colors.gray }}>
-    //                         {target.achievedValue || 0} / {target.targetValue}
-    //                     </Text>
-    //                 </TouchableOpacity>
-    //             ))}
-    //         </View>
-    //     </View>
-    // );
+        // Set default end date based on target type
+        if (!targetEndDate) {
+            switch (targetType) {
+                case "Year":
+                    endDate.setFullYear(now.getFullYear() + 1);
+                    break;
+                case "Monthly":
+                    endDate.setMonth(now.getMonth() + 1);
+                    break;
+                case "Quarter":
+                    endDate.setMonth(now.getMonth() + 3);
+                    break;
+                default:
+                    endDate.setMonth(now.getMonth() + 1);
+            }
+        }
+
+        // Calculate the difference in days or weeks
+        const timeDiff = endDate - now;
+        const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+        const weeksLeft = Math.ceil(daysLeft / 7);
+
+        if (targetType === "Year" || targetType === "Monthly") {
+            return `Doing great, ${weeksLeft} weeks left to achieve this target.`;
+        } else {
+            return `Doing great, ${daysLeft} days left to achieve this target.`;
+        }
+    };
+    const remainingTimeMessage = getRemainingTime(selectedTarget.targetType, selectedTarget.targetEndDate);
+
+
     return (
         <View style={{ paddingVertical: 20, backgroundColor: "white", marginTop: 20, paddingBottom: 20 }}>
             <Text style={{ fontSize: 18, fontWeight: "bold", paddingHorizontal: 20, marginBottom: 20 }}>
@@ -122,14 +125,13 @@ const TargetProgress = ({ loggedInUser }) => {
 
             {/* Display only selected target */}
             <View style={{ alignItems: "center", paddingHorizontal: 10 }}>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     style={{
-                        backgroundColor: Colors.companyLight,
+                        backgroundColor: Colors.whiteColor,
                         borderRadius: 10,
                         padding: 20,
                         alignItems: "center",
-                        borderWidth: 1,
-                        borderColor: Colors.companyPrimaryDark,
+                   
                         width: "90%",
                     }}
                     activeOpacity={0.7}
@@ -142,6 +144,76 @@ const TargetProgress = ({ loggedInUser }) => {
                     <Text style={{ fontSize: 16, fontWeight: "bold", marginTop: 5 }}>{selectedTarget.targetType}</Text>
                     <Text style={{ fontSize: 14, color: Colors.gray }}>
                         {selectedTarget.achievedValue || 0} / {selectedTarget.targetValue}
+                    </Text>
+                 
+                    <Text style={{ fontSize: 14, color: Colors.gray, marginTop: 10, textAlign: "center" }}>
+                        {remainingTimeMessage}
+                    </Text>
+                </TouchableOpacity> */}
+
+                <TouchableOpacity
+                    style={{
+                        backgroundColor: Colors.whiteColor,
+                        borderRadius: 12,
+                        padding: 20,
+                        alignItems: "center",
+                        width: "90%",
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 6,
+                        elevation: 5,
+                    }}
+                    activeOpacity={0.8}
+                >
+                    {/* Circular Chart with Subtle Background */}
+                    <View style={{ alignItems: "center", marginBottom: 15 }}>
+                        <View
+                            style={{
+                                backgroundColor: Colors.lightGrayColor,
+                                borderRadius: 100,
+                                padding: 12,
+                            }}
+                        >
+                            <HollowPieChart
+                                achieved={selectedTarget.achievedValue || 0}
+                                target={selectedTarget.targetValue}
+                                color={targetColors[selectedTarget.targetType] || "gray"}
+                            />
+                        </View>
+                    </View>
+
+                    {/* Target Type (Heading) */}
+                    <Text style={{
+                        fontSize: 18,
+                        fontWeight: "bold",
+                        color: Colors.companyPrimaryDark,
+                        marginBottom: 4,
+                    }}>
+                        {selectedTarget.targetType}
+                    </Text>
+
+                    {/* Achieved / Target Value with Progress Bar */}
+                    <View style={{ width: "80%", alignItems: "center", marginBottom: 10 }}>
+                        <Text style={{
+                            fontSize: 15,
+                            fontWeight: "500",
+                            color: Colors.blackColor,
+                            marginBottom: 5,
+                        }}>
+                            {selectedTarget.achievedValue || 0} / {selectedTarget.targetValue}
+                        </Text>
+
+
+                    </View>
+
+                    {/* Remaining Time Message */}
+                    <Text style={{
+                        fontSize: 14,
+                        color: Colors.gray,
+                        textAlign: "center",
+                    }}>
+                        {remainingTimeMessage}
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -907,12 +979,20 @@ const TopProducts = ({ productApiData, navigation }) => {
 
 const FeaturedProducts = ({ productApiData, navigation }) => {
     if (!productApiData.length) return null;
+    const onProductClick = (item) => {
+        console.log("clicked on ", item);
+
+        // Navigate to the ProductDescriptionScreen with the item passed as openedProduct
+        navigation.push('productDescription/productDescriptionScreen', {
+            openedProduct: JSON.stringify(item), // Pass the item as openedProduct
+        });
+    };
 
     return (
         <View style={{ paddingVertical: 20, backgroundColor: "white", marginTop: 20 }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, marginBottom: 10 }}>
                 <Text style={{ fontSize: 18, fontWeight: "bold" }}>Featured Products</Text>
-                <TouchableOpacity onPress={() => navigation.push("AllProducts")}>
+                <TouchableOpacity onPress={() => navigation.push("allProducts/allProducts")}>
                     <Text style={{ fontSize: 16, color: `${Colors.companyPrimaryDark}` }}>View All</Text>
                 </TouchableOpacity>
             </View>
@@ -922,7 +1002,7 @@ const FeaturedProducts = ({ productApiData, navigation }) => {
                     <TouchableOpacity
                         key={index}
                         activeOpacity={0.7}
-                        onPress={() => navigation.push("ProductDetails", { item })}
+                        onPress={() => onProductClick(item)}
                         style={{
                             backgroundColor: "white",
                             borderRadius: 10,
@@ -1012,7 +1092,7 @@ const DealsOfTheDayComp = ({ productApiData, navigation }) => {
         console.log("clicked on ", item);
 
         navigation.push('productDescription/productDescriptionScreen', {
-            item: JSON.stringify(item)
+            openedProduct: JSON.stringify(item)
         });
     };
 
@@ -1121,7 +1201,7 @@ const DealsOfTheDayComp = ({ productApiData, navigation }) => {
 
             <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20, marginBottom: 10 }}>
                 <Text style={{ fontSize: 18, fontWeight: "bold" }}>Deals of the Day</Text>
-                <TouchableOpacity onPress={() => navigation.push("AllProducts")}>
+                <TouchableOpacity onPress={() => navigation.push("allProducts/allProducts")}>
                     <Text style={{ fontSize: 16, color: `${Colors.companyPrimaryDark}` }}>View All</Text>
                 </TouchableOpacity>
             </View>

@@ -1,5 +1,5 @@
-import React, { useContext } from "react";
-import { View, Text, Image, FlatList, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
+import React, { useContext, useState } from "react";
+import { View, Text, Image, FlatList, TouchableOpacity, StyleSheet, Dimensions, TextInput } from "react-native";
 import { AppContext } from "../context/AppProvider";
 import { Colors, Fonts, Sizes } from "../../constant/styles";
 import { useNavigation } from "expo-router";
@@ -10,17 +10,38 @@ const { width } = Dimensions.get('screen');
 const AllProducts = () => {
     const { products } = useContext(AppContext);
     const navigation = useNavigation();
+    const [searchQuery, setSearchQuery] = useState(""); // State for search query
+    const [filteredProducts, setFilteredProducts] = useState(products); // State for filtered products
 
     const onProductClick = (item) => {
         console.log("Clicked on:", item);
+
         navigation.push("productDescription/productDescriptionScreen", {
-            item: JSON.stringify(item),
+            openedProduct: JSON.stringify(item),
         });
     };
     // Ensure products exist
     if (!products || products.length === 0) {
         return <Text style={{ textAlign: "center", marginTop: 20 }}>No Products Available</Text>;
     }
+
+    // Function to handle search
+    const handleSearch = (query) => {
+        setSearchQuery(query);
+        if (query) {
+            const filtered = products.filter((item) => {
+                const lowerCaseQuery = query.toLowerCase();
+                return (
+                    item.name.toLowerCase().includes(lowerCaseQuery) || // Search by product name
+                    item.companyName?.toLowerCase().includes(lowerCaseQuery) || // Search by company name
+                    item.composition?.toLowerCase().includes(lowerCaseQuery) // Search by composition
+                );
+            });
+            setFilteredProducts(filtered);
+        } else {
+            setFilteredProducts(products); // Reset to all products if search query is empty
+        }
+    };
 
     function header() {
         return (
@@ -44,6 +65,25 @@ const AllProducts = () => {
         );
     }
 
+    // Search Bar Component
+    function searchBar() {
+        return (
+            <View style={styles.searchBarContainer}>
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search by name, company, or composition..."
+                    placeholderTextColor={Colors.grayColor}
+                    value={searchQuery}
+                    onChangeText={handleSearch} // Update search query and filter products
+                />
+                <MaterialIcons
+                    name="search"
+                    size={24}
+                    color={Colors.grayColor}
+                />
+            </View>
+        );
+    }
 
     const renderItem = ({ item }) => {
         const inventory = item.productInventoryList?.[0] || {};
@@ -56,11 +96,14 @@ const AllProducts = () => {
                 style={{
                     backgroundColor: "white",
                     borderRadius: 10,
-                    width: "48%",
-                    flex: 1, // Makes sure two items fit in a row
+                    width: "45%",
+                    //flex: 1, // Makes sure two items fit in a row
                     margin: 8, // Spacing between items
                     padding: 10,
-                    alignSelf: "flex-start",
+                    alignSelf: "center",
+                    // backgroundColor: "red",
+                    justifyContent: "space-between"
+
                 }}
             >
                 {/* Product Image and Discount */}
@@ -102,7 +145,7 @@ const AllProducts = () => {
 
                 {/* Product Name */}
                 <Text
-                    numberOfLines={2}
+                    numberOfLines={1}
                     ellipsizeMode="tail"
                     style={{
                         fontSize: 18,
@@ -138,10 +181,11 @@ const AllProducts = () => {
     };
 
     return (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, backgroundColor: Colors.companyLight }}>
             {header()}
+            {searchBar()}
             <FlatList
-                data={products}
+                data={filteredProducts}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id.toString()}
                 numColumns={2} // Ensures two products per row
@@ -162,153 +206,23 @@ const styles = StyleSheet.create({
         paddingLeft: Sizes.fixPadding * 2.0,
         paddingRight: Sizes.fixPadding,
     },
-    cartItemCountWrapStyle: {
-        position: 'absolute',
-        right: -8.0,
-        height: 17.0,
-        width: 17.0,
-        borderRadius: 8.5,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: Colors.redColor,
-        elevation: 10.0,
-    },
-    deliverToInfoWrapStyle: {
+    searchBarContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginHorizontal: Sizes.fixPadding * 2.0,
-        marginVertical: Sizes.fixPadding + 5.0
-    },
-    imageWrapStyle: {
+        alignItems: 'center',
         backgroundColor: Colors.whiteColor,
-        borderColor: Colors.primaryColor,
-        borderWidth: 1.0,
-        borderRadius: Sizes.fixPadding,
-        marginRight: Sizes.fixPadding * 2.0,
-        width: 200.0,
-        height: 190.0,
-        alignItems: 'center',
-        justifyContent: 'center',
+        borderRadius: 10,
+        marginHorizontal: 16,
+        marginVertical: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        elevation: 2,
     },
-    sliderActiveDotStyle: {
-        width: 20,
-        height: 7,
-        borderRadius: 10.0,
-        backgroundColor: Colors.primaryColor,
-        marginHorizontal: Sizes.fixPadding - 17.0
-    },
-    sliderInactiveDotStyle: {
-        width: 15,
-        height: 15,
-        borderRadius: 7.5,
-        backgroundColor: '#E0E0E0',
-    },
-    sliderPaginationWrapStyle: {
-        marginTop: Sizes.fixPadding - 25.0,
-    },
-    offerWrapStyle: {
-        backgroundColor: Colors.redColor,
-        borderRadius: Sizes.fixPadding - 5.0,
-        paddingVertical: Sizes.fixPadding - 6.0,
-        paddingHorizontal: Sizes.fixPadding - 4.0,
-    },
-    addButtonStyle: {
-        backgroundColor: Colors.primaryColor,
-        borderRadius: Sizes.fixPadding,
-        alignItems: 'center',
-        justifyContent: "center",
-        paddingHorizontal: Sizes.fixPadding * 4.0,
-        paddingVertical: Sizes.fixPadding - 3.0,
-    },
-    itemCountAndViewCartButtonWrapStyle: {
-        backgroundColor: Colors.whiteColor,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingVertical: Sizes.fixPadding,
-        paddingHorizontal: Sizes.fixPadding * 2.0,
-        alignItems: 'center',
-        borderTopColor: Colors.bodyBackColor,
-        borderTopWidth: 1.0,
-    },
-    viewCartButtonStyle: {
-        backgroundColor: Colors.primaryColor,
-        borderRadius: Sizes.fixPadding - 5.0,
-        paddingVertical: Sizes.fixPadding,
-        alignItems: 'center',
-        justifyContent: 'center',
+    searchInput: {
         flex: 1,
+        marginLeft: 8,
+        fontSize: 16,
+        color: Colors.blackColor,
     },
-    bulletStyle: {
-        backgroundColor: Colors.blackColor,
-        height: 8.0,
-        width: 8.0,
-        borderRadius: 4.0,
-        marginTop: Sizes.fixPadding - 2.0,
-        marginRight: Sizes.fixPadding,
-    },
-    dividerStyle: {
-        backgroundColor: Colors.grayColor,
-        height: 1.0,
-        marginTop: Sizes.fixPadding,
-        marginBottom: Sizes.fixPadding + 5.0,
-    },
-    selectQuantityModelStyle: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.50)',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    selectedQuantityWrapStyle: {
-        paddingVertical: Sizes.fixPadding - 5.0,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: Sizes.fixPadding + 5.0,
-        paddingVertical: Sizes.fixPadding + 2.0,
-    },
-    doneIconWrapStyle: {
-        width: 25.0,
-        height: 25.0,
-        borderRadius: 12.5,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: Colors.redColor
-    },
-    selectQuantityTitleStyle: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        margin: Sizes.fixPadding * 2.0,
-    },
-    selectQuantityButtonStyle: {
-        backgroundColor: Colors.whiteColor,
-        borderRadius: Sizes.fixPadding,
-        borderColor: Colors.primaryColor,
-        borderWidth: 1.0,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: Sizes.fixPadding - 5.0,
-        paddingHorizontal: Sizes.fixPadding * 3.0,
-    },
-    bottomSheetItemWrapStyle: {
-        borderWidth: 1.0,
-        borderRadius: Sizes.fixPadding,
-        paddingVertical: Sizes.fixPadding,
-        paddingHorizontal: Sizes.fixPadding * 2.0,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: Sizes.fixPadding * 2.0,
-    },
-    flavourAndPackageSizeInfoWrapStyle: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        borderColor: Colors.primaryColor,
-        borderWidth: 1.0,
-        borderRadius: Sizes.fixPadding,
-        paddingHorizontal: Sizes.fixPadding + 5.0,
-        paddingVertical: Sizes.fixPadding + 3.0,
-    }
 });
 
 export default AllProducts;
