@@ -1,6 +1,9 @@
 import React, { createContext, useState, useEffect } from "react";
+import BASE_URL from "../../constant/variable";
+
 
 export const AppContext = createContext();
+
 
 const AppProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -28,7 +31,7 @@ const AppProvider = ({ children }) => {
 
         const fetchProducts = async () => {
             try {
-                const response = await fetch('http://13.233.121.204:8080/FarmHub/api/v1/products'); // Use the correct API endpoint
+                const response = await fetch(`${BASE_URL}/api/v1/products`); // Use the correct API endpoint
                 if (!response.ok) {
                     throw new Error('Failed to fetch products');
                 }

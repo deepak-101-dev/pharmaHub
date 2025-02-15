@@ -19,7 +19,9 @@ import { useNavigation } from "expo-router";
 import { useRoute } from '@react-navigation/native';
 import { AppContext } from "../context/AppProvider"
 import { useRouter } from 'expo-router';
+import BASE_URL from "../../constant/variable";
 const { width } = Dimensions.get('screen');
+
 
 const VerificationScreen = () => {
     const navigation = useNavigation();
@@ -73,7 +75,7 @@ const VerificationScreen = () => {
         //     }
         // } 
         try {
-            const response = await fetch("http://13.233.121.204:8080/FarmHub/api/v1/login", {
+            const response = await fetch(`${BASE_URL}/apiapi/v1/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

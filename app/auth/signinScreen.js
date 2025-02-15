@@ -7,6 +7,7 @@ import MyStatusBar from "../../component/myStatusBar";
 import { useNavigation, useRouter } from "expo-router";
 import { Modal } from "react-native-paper";
 import { CircleFade } from 'react-native-animated-spinkit';
+import BASE_URL from "../../constant/variable";
 
 
 
@@ -65,7 +66,7 @@ const SigninScreen = () => {
         //     }
         // } 
         try {
-            const response = await fetch("http://13.233.121.204:8080/FarmHub/api/v1/login", {
+            const response = await fetch(`${BASE_URL}/api/v1/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

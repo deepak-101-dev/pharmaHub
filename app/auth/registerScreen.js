@@ -11,6 +11,7 @@ import * as ImagePicker from 'expo-image-picker';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { FontAwesome } from "@expo/vector-icons";
 import { FileText, FileCheck, ImageIcon, Building, Building2, MapPin, CalendarDays, Phone, PhoneCall, Mail, UserCheck, User, User2, Home, CreditCard } from 'lucide-react-native';
+import BASE_URL from "../../constant/variable";
 
 
 
@@ -251,7 +252,7 @@ const RegisterScreen = () => {
 
         console.log("Payload:", JSON.stringify(payload, null, 2));
         try {
-            const response = await fetch("http://13.233.121.204:8080/FarmHub/api/v1/customer", {
+            const response = await fetch(`${BASE_URL}/api/v1/customer`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
